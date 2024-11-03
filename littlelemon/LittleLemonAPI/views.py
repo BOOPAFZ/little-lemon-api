@@ -7,48 +7,64 @@ from django.http import HttpResponseBadRequest
 from rest_framework import generics, viewsets, status
 from .serializers import MenuItemSerializer, CategorySerializer, UserSerializer, CartSerializer, OrderSerializer
 from django.contrib.auth.models import User, Group
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 
-class Category(generics.RetrieveUpdateDestroyAPIView):
+
+
+class CustomViewMixin:
+    def get_permissions(self):
+        permission_classes = []
+        if self.request.method != 'GET':
+            permission_classes = [IsAuthenticated]
+
+        return [permission() for permission in permission_classes]
+
+    throttle_classes = [AnonRateThrottle, UserRateThrottle]
+
+
+
+class Category(CustomViewMixin, generics.RetrieveUpdateDestroyAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
-class MenuItemList(generics.ListCreateAPIView):
+class MenuItemList(CustomViewMixin, generics.ListCreateAPIView):
     queryset = MenuItem.objects.all()
     serializer_class = MenuItemSerializer
     http_method_names = ['get', 'post']
 
-class SingleMenuItem(generics.RetrieveUpdateDestroyAPIView):
+class SingleMenuItem(CustomViewMixin,generics.RetrieveUpdateDestroyAPIView):
     queryset = MenuItem.objects.all()
     serializer_class = MenuItemSerializer
 
 
-class ManagerUserView(generics.ListCreateAPIView):
+class ManagerUserView(CustomViewMixin, generics.ListCreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
 
-class SingleManagerUserView(generics.RetrieveDestroyAPIView):
+class SingleManagerUserView(CustomViewMixin, generics.RetrieveDestroyAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
 
-class DeliveryCrewUserView(generics.ListCreateAPIView):
+class DeliveryCrewUserView(CustomViewMixin, generics.ListCreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
-class SingleDeliveryCrewUserView(generics.RetrieveDestroyAPIView):
+class SingleDeliveryCrewUserView(CustomViewMixin, generics.RetrieveDestroyAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
 
-class CartView(generics.ListCreateAPIView, generics.DestroyAPIView):
+class CartView(CustomViewMixin, generics.ListCreateAPIView, generics.DestroyAPIView):
     queryset = Cart.objects.all()
     serializer_class = CartSerializer
 
-class OrderView(generics.ListCreateAPIView):
+class OrderView(CustomViewMixin, generics.ListCreateAPIView):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
 
-class SingleOrderView(generics.RetrieveUpdateAPIView):
+class SingleOrderView(CustomViewMixin, generics.RetrieveUpdateAPIView):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
