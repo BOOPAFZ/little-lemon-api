@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'LittleLemonAPI',
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
-    'djoser',
+    
 ]
 
 MIDDLEWARE = [
