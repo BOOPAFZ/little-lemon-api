@@ -41,6 +41,20 @@ class SingleMenuItem(CustomViewMixin,generics.RetrieveUpdateDestroyAPIView):
 class ManagerUserView(CustomViewMixin, generics.ListCreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        manager_group = Group.objects.get(name='manager')
+        return User.objects.filter(groups=manager_group)
+    def post(self, request, *args, **kwargs):
+        username = request.data.get('username')
+        if username:
+            user = get_object_or_404(User, username=username)
+            manager_group = Group.objects.get(name='manager')
+            manager_group.user_set.add(user)
+            return Response({'Message': 'User has been added.'}, status=status.HTTP_201_CREATED)
+        return Response({'Message': 'Error.'}, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 class SingleManagerUserView(CustomViewMixin, generics.RetrieveDestroyAPIView):
